@@ -1,3 +1,3 @@
-# polaris-lib
+# go-utils
 
-## TODO: move this folder to another repo later on.# go-utils
+A variety of commonly used go utilities, used throughout many projects
