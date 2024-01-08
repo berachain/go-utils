@@ -34,11 +34,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Map Registry", func() {
+var _ = Describe("Ordered Map Registry", func() {
 	var r libtypes.Registry[string, *mock.Registrable]
 
 	BeforeEach(func() {
-		r = registry.NewMap[string, *mock.Registrable]()
+		r = registry.NewOrderedMap[string, *mock.Registrable]()
 	})
 
 	When("adding an item", func() {
@@ -48,12 +48,30 @@ var _ = Describe("Map Registry", func() {
 			Expect(r.Register(item)).To(Succeed())
 		})
 
-		It("should be a no-op if the item already exists", func() {
-			// Register the same item again.
-			mr := mock.NewMockRegistrable("foo", "bar2")
-			Expect(r.Register(mr)).To(Succeed())
-			Expect(r.Iterate()).To(HaveLen(1))
-			Expect(r.Get("foo").Data()).To(Equal("bar2"))
+		When("adding multiple items", func() {
+			It("should be a no-op if the item already exists", func() {
+				// Register the same item again.
+				mr := mock.NewMockRegistrable("foo", "bar2")
+				Expect(r.Register(mr)).To(Succeed())
+				Expect(r.Iterate()).To(HaveLen(1))
+				Expect(r.Get("foo").Data()).To(Equal("bar2"))
+			})
+
+			It("should preserve order of registration", func() {
+				mr := mock.NewMockRegistrable("foo2", "bar2")
+				Expect(r.Register(mr)).To(Succeed())
+				Expect(r.Iterate()).To(HaveLen(2))
+				orderedMap, err := r.IterateInOrder()
+				Expect(err).ToNot(HaveOccurred())
+				for i, key := range orderedMap.Keys() {
+					if i == 0 {
+						Expect(key).To(Equal("foo"))
+					}
+					if i == 1 {
+						Expect(key).To(Equal("foo2"))
+					}
+				}
+			})
 		})
 
 		It("should be able to get the item", func() {

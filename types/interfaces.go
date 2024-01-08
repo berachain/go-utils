@@ -25,7 +25,11 @@
 
 package types
 
-import "context"
+import (
+	"context"
+
+	"github.com/elliotchance/orderedmap/v2"
+)
 
 // Cloneable is an interface that defines a `Clone` method.
 type Cloneable[T any] interface {
@@ -64,8 +68,11 @@ type Registry[K comparable, T Registrable[K]] interface {
 	// Has returns true if the item exists in the registry.
 	Has(K) bool
 
-	// Iterate returns an iterable map of the registry.
+	// Iterate returns an (unordered) iterable map of the registry.
 	Iterate() map[K]T
+
+	// IterateInOrder returns an (ordered) iterable map of the registry.
+	IterateInOrder() (*orderedmap.OrderedMap[K, T], error)
 }
 
 // Controllable defines a type which can be controlled.

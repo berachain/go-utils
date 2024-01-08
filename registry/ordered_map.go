@@ -26,57 +26,61 @@
 package registry
 
 import (
-	"errors"
-
 	libtypes "github.com/berachain/go-utils/types"
 
 	"github.com/elliotchance/orderedmap/v2"
 )
 
-// mapRegistry is a simple implementation of `Registry` that uses a map as the underlying data
-// structure.
-type mapRegistry[K comparable, T libtypes.Registrable[K]] struct {
+// orderedMapRegistry is a simple implementation of `Registry` that uses a map as the underlying
+// data structure.
+type orderedMapRegistry[K comparable, T libtypes.Registrable[K]] struct {
 	// items is the map of items in the registry.
-	items map[K]T
+	items *orderedmap.OrderedMap[K, T]
 }
 
-// NewMap creates and returns a new `mapRegistry`.
+// NewOrderedMap creates and returns a new `orderedMapRegistry`. Maintains order of registration
+// (insertion).
 //
 //nolint:revive // only used as Registry interface.
-func NewMap[K comparable, T libtypes.Registrable[K]]() *mapRegistry[K, T] {
-	return &mapRegistry[K, T]{
-		items: make(map[K]T),
+func NewOrderedMap[K comparable, T libtypes.Registrable[K]]() *orderedMapRegistry[K, T] {
+	return &orderedMapRegistry[K, T]{
+		items: orderedmap.NewOrderedMap[K, T](),
 	}
 }
 
 // Get returns an item using its ID.
-func (mr *mapRegistry[K, T]) Get(id K) T {
-	return mr.items[id]
+func (mr *orderedMapRegistry[K, T]) Get(id K) T {
+	val, _ := mr.items.Get(id)
+	return val
 }
 
 // Register adds an item to the registry.
-func (mr *mapRegistry[K, T]) Register(item T) error {
-	mr.items[item.RegistryKey()] = item
+func (mr *orderedMapRegistry[K, T]) Register(item T) error {
+	_ = mr.items.Set(item.RegistryKey(), item)
 	return nil
 }
 
 // Remove removes an item from the registry.
-func (mr *mapRegistry[K, T]) Remove(id K) {
-	delete(mr.items, id)
+func (mr *orderedMapRegistry[K, T]) Remove(id K) {
+	_ = mr.items.Delete(id)
 }
 
 // Has returns true if the item exists in the registry.
-func (mr *mapRegistry[K, T]) Has(id K) bool {
-	_, ok := mr.items[id]
+func (mr *orderedMapRegistry[K, T]) Has(id K) bool {
+	_, ok := mr.items.Get(id)
 	return ok
 }
 
 // Iterate returns the underlying map (unordered).
-func (mr *mapRegistry[K, T]) Iterate() map[K]T {
-	return mr.items
+func (mr *orderedMapRegistry[K, T]) Iterate() map[K]T {
+	ret := make(map[K]T, mr.items.Len())
+	for el := mr.items.Front(); el != nil; el = el.Next() {
+		ret[el.Key] = el.Value
+	}
+	return ret
 }
 
-// IterateInOrder is not supported for this type, returns an error.
-func (mr *mapRegistry[K, T]) IterateInOrder() (*orderedmap.OrderedMap[K, T], error) {
-	return nil, errors.New("order not supported for this registry map")
+// IterateInOrder returns the underlying map (ordered).
+func (mr *orderedMapRegistry[K, T]) IterateInOrder() (*orderedmap.OrderedMap[K, T], error) {
+	return mr.items.Copy(), nil
 }
