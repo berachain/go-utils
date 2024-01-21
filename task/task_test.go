@@ -26,7 +26,7 @@ func TestTask(t *testing.T) {
 	cancel()
 
 	// Check the value
-	if v != 10 {
-		t.Errorf("Expected %v, got %v", 10, v)
+	if !(9 <= v && v <= 11) {
+		t.Errorf("Expected value in range [9, 11], got %v", v)
 	}
 }

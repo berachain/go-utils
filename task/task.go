@@ -40,6 +40,7 @@ func CancellablePeriodicTask[T any](period_us uint64, t *T, f func(t *T)) (conte
 		for {
 			select {
 			case <-ctx.Done():
+				ticker.Stop()
 				return
 			case <-ticker.C:
 				f(t)
