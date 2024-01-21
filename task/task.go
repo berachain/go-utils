@@ -37,10 +37,11 @@ func CancellablePeriodicTask[T any](period_us uint64, t *T, f func(t *T)) (conte
 
 	inner := func() {
 		ticker := time.NewTicker(time.Duration(period_us) * time.Microsecond)
+		defer ticker.Stop()
 		for {
 			select {
 			case <-ctx.Done():
-				ticker.Stop()
+
 				return
 			case <-ticker.C:
 				f(t)
