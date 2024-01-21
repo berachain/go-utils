@@ -31,12 +31,12 @@ import (
 )
 
 // CancellablePeriodicTask creates a cancellable periodic task
-// The task will be executed every period_us microseconds
-func CancellablePeriodicTask[T any](period_us uint64, t *T, f func(t *T)) (context.Context, context.CancelFunc) {
+// The task will be executed every periodUs microseconds
+func CancellablePeriodicTask[T any](periodUs uint64, t *T, f func(t *T)) (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	inner := func() {
-		ticker := time.NewTicker(time.Duration(period_us) * time.Microsecond)
+		ticker := time.NewTicker(time.Duration(periodUs) * time.Microsecond)
 		defer ticker.Stop()
 		for {
 			select {

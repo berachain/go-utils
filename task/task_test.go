@@ -32,8 +32,8 @@ import (
 
 // TestTask tests the CancellablePeriodicTask function
 // by creating a task that increments a variable every
-// delay_us microseconds, and then cancelling the task
-// after delay_us * 10 microseconds
+// delayUs microseconds, and then cancelling the task
+// after delayUs * 10 microseconds
 // The variable should be incremented 10 times
 func TestTask(t *testing.T) {
 	dummyFunc := func(t *int) {
@@ -41,11 +41,11 @@ func TestTask(t *testing.T) {
 	}
 
 	v := 0
-	delay_us := uint64(1000)
-	_, cancel := CancellablePeriodicTask(delay_us, &v, dummyFunc)
+	delayUs := uint64(1000)
+	_, cancel := CancellablePeriodicTask(delayUs, &v, dummyFunc)
 
-	// Sleep for delay_us * 10
-	time.Sleep(time.Duration(delay_us*10) * time.Microsecond)
+	// Sleep for delayUs * 10
+	time.Sleep(time.Duration(delayUs*10) * time.Microsecond)
 
 	// Cancel the context
 	cancel()
